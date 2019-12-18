@@ -12,7 +12,7 @@ pub use diesel::sql_types::HasSqlType;
 pub use diesel::*;
 pub use schema::{connection_without_transaction, TestConnection};
 
-use diesel::expression::AsExpression;
+use diesel::expression::{AsExpression, NonAggregate};
 use diesel::query_builder::{QueryFragment, QueryId};
 use std::collections::Bound;
 
@@ -30,6 +30,7 @@ where
         + Clone
         + ::std::fmt::Debug,
     <T as AsExpression<ST>>::Expression: SelectableExpression<(), SqlType = ST>
+        + NonAggregate
         + QueryFragment<<TestConnection as Connection>::Backend>
         + QueryId,
 {

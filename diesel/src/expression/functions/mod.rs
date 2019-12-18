@@ -90,7 +90,7 @@
 /// are:
 ///
 /// - `#[aggregate]`
-///   - Indicates that this is an aggregate function, and that `NonAggregate`
+///   - Indicates that this is an aggregate function, and that `ValidGrouping`
 ///     should not be implemented.
 /// - `#[sql_name="name"]`
 ///   - The SQL to be generated is different than the Rust name of the function.
@@ -174,7 +174,7 @@ macro_rules! no_arg_sql_function_body_except_to_sql {
     ($type_name:ident, $return_type:ty, $docs:expr) => {
         #[allow(non_camel_case_types)]
         #[doc=$docs]
-        #[derive(Debug, Clone, Copy, QueryId, NonAggregate)]
+        #[derive(Debug, Clone, Copy, QueryId, ValidGrouping)]
         pub struct $type_name;
 
         impl $crate::expression::Expression for $type_name {

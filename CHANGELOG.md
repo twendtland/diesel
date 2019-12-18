@@ -27,9 +27,21 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
 * The `MacAddr` SQL type can now be used without enabling the `network-address`
   feature.
 
+* Multiple aggregate expressions can now appear together in the same select
+  clause. See [the upgrade notes](#2-0-0-upgrade-non-aggregate) for details.
+
+* `ValidGrouping` has been added to represent whether an expression is valid for
+  a given group by clause, and whether or not it's aggregate. It replaces the
+  functionality of `NonAggregate`. See [the upgrade
+  notes](#2-0-0-upgrade-non-aggregate) for details.
+
 ### Removed
 
 * All previously deprecated items have been removed.
+
+* `#[derive(NonAggregate)]` has been deprecated in favor of
+  `#[derive(ValidGrouping)]`. The `NonAggregate` trait is now a trait alias, and
+  cannot be directly implemented. Both derives generate identical code.
 
 ### Changed
 
@@ -55,6 +67,20 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
   For the postgres backend additionally type information where added to the `RawValue`
   type. This allows to dynamically deserialize `RawValues` in container types.
 
+* The handling of mixed aggregate values is more robust. Invalid queries such as
+  `.select(max(id) + other_column)` are now correctly rejected, and valid
+  queries such as `.select((count_star(), max(other_column)))` are now correctly
+  accepted. For more details, see [the upgrade notes](#2-0-0-upgrade-non-aggregate).
+
+* `NonAggregate` is now a trait alias for `ValidGrouping<()>` for expressions
+  that are not aggregate. On stable this is a normal trait with a blanket impl,
+  but it should never be implemented directly. With the `unstable` feature, it
+  will use trait aliases which prevent manual implementations.
+
+  Due to language limitations, we cannot make the new trait alias by itself
+  represent everything it used to, so in some rare cases code changes may be
+  required. See [the upgrade notes](#2-0-0-upgrade-non-aggregate) for details.
+
 ### Fixed
 
 * Many types were incorrectly considered non-aggregate when they should not
@@ -67,7 +93,38 @@ for Rust libraries in [RFC #1105](https://github.com/rust-lang/rfcs/blob/master/
   are now available without the `diesel_` prefix. With Rust 2018 they can be
   invoked as `diesel::infix_operator!` instead.
 
+### Upgrade Notes
 
+#### Replacement of `NonAggregate` with `ValidGrouping`
+<a name="2-0-0-upgrade-non-aggregate"></a>
+
+FIXME: This should probably be on the website, but I wanted to document it in
+the PR adding the changes.
+
+Key points:
+
+- Rules for aggregation are now correctly enforced. They match the semantics of
+  PG or MySQL with `ONLY_FULL_GROUP_BY` enabled.
+  - As before, `sql` is the escape hatch if needed.
+  - MySQL users can use `ANY_VALUE`, PG users can use `DISTINCT ON`. Also
+    consider using max/min/etc to get deterministic values.
+- Any `impl NonAggregate` must be replaced with `impl ValidGrouping`
+- If you were deriving before you can still derive.
+- For most code, `T: NonAggregate` should continue to work. Unless you're
+  getting a compiler error, you most likely don't need to change it.
+- The full equivalent of what `T: NonAggregate` used to mean is:
+
+      where
+          T: ValidGrouping<()>,
+          T::IsAggregate: MixedGrouping<is_aggregate::No, Output = is_aggregate::No>,
+          is_aggreagte::No: MixedGrouping<T::IsAggregate, Output = is_aggreagte::No>,
+
+- With `feature = "unstable"`, `T: NonAggregate` implies the first two bounds,
+  but not the third. On stable only the first bound is implied. This is a
+  language limitation.
+- `T: NonAggregate` can still be passed everywhere it could before, but `T:
+  NonAggregate` no longer implies `(OtherType, T): NonAggregate`.
+  - With `feature = "unstable"`, `(T, OtherType): NonAggregate` is still implied.
 
 [2-0-migration]: FIXME write a migration guide
 

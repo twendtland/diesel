@@ -61,7 +61,7 @@ macro_rules! __diesel_operator_body {
         expression_ty_params = ($($expression_ty_params:ident,)*),
         expression_bounds = ($($expression_bounds:tt)*),
     ) => {
-        #[derive(Debug, Clone, Copy, QueryId, DieselNumericOps, NonAggregate)]
+        #[derive(Debug, Clone, Copy, QueryId, DieselNumericOps, ValidGrouping)]
         #[doc(hidden)]
         pub struct $name<$($ty_param,)+> {
             $(pub(crate) $field_name: $ty_param,)+
@@ -407,7 +407,7 @@ where
     }
 }
 
-#[derive(Debug, Clone, Copy, QueryId, DieselNumericOps, NonAggregate)]
+#[derive(Debug, Clone, Copy, QueryId, DieselNumericOps, ValidGrouping)]
 #[doc(hidden)]
 pub struct Concat<L, R> {
     pub(crate) left: L,

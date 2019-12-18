@@ -42,12 +42,12 @@ mod diesel_numeric_ops;
 mod from_sql_row;
 mod identifiable;
 mod insertable;
-mod non_aggregate;
 mod query_id;
 mod queryable;
 mod queryable_by_name;
 mod sql_function;
 mod sql_type;
+mod valid_grouping;
 
 use diagnostic_shim::*;
 
@@ -91,7 +91,9 @@ pub fn derive_insertable(input: TokenStream) -> TokenStream {
 
 #[proc_macro_derive(NonAggregate)]
 pub fn derive_non_aggregate(input: TokenStream) -> TokenStream {
-    expand_proc_macro(input, non_aggregate::derive)
+    eprintln!("#[derive(NonAggregate)] is deprecated. Please use \
+        `#[derive(ValidGrouping)]` instead.)");
+    expand_proc_macro(input, valid_grouping::derive)
 }
 
 #[proc_macro_derive(QueryId)]
@@ -112,6 +114,11 @@ pub fn derive_queryable_by_name(input: TokenStream) -> TokenStream {
 #[proc_macro_derive(SqlType, attributes(postgres, sqlite_type, mysql_type))]
 pub fn derive_sql_type(input: TokenStream) -> TokenStream {
     expand_proc_macro(input, sql_type::derive)
+}
+
+#[proc_macro_derive(ValidGrouping, attributes(diesel))]
+pub fn derive_valid_grouping(input: TokenStream) -> TokenStream {
+    expand_proc_macro(input, valid_grouping::derive)
 }
 
 #[proc_macro]

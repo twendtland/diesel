@@ -1,4 +1,4 @@
-use super::Expression;
+use super::{Expression, ValidGrouping, is_aggregate};
 use crate::backend::Backend;
 use crate::query_builder::*;
 use crate::result::QueryResult;
@@ -61,6 +61,10 @@ pub struct CountStar;
 
 impl Expression for CountStar {
     type SqlType = BigInt;
+}
+
+impl<GB> ValidGrouping<GB> for CountStar {
+    type IsAggregate = is_aggregate::Yes;
 }
 
 impl<DB: Backend> QueryFragment<DB> for CountStar {
