@@ -60,8 +60,8 @@ use diagnostic_shim::*;
 /// For example, to derive this for a struct called `User`, you will
 /// likely need a line such as `use schema::users;`
 ///
-/// If the field name of your struct differs
-/// from the name of the column, you can annotate the field with
+/// If a field name of your struct differs
+/// from the name of the corresponding column, you can annotate the field with
 /// `#[column_name = "some_column_name"]`.
 ///
 /// By default, any `Option` fields on the struct are skipped if their value is
@@ -107,8 +107,8 @@ pub fn derive_as_changeset(input: TokenStream) -> TokenStream {
 /// - `impl AsExpression<Nullable<SqlType>> for &'a &'b YourType`
 ///
 /// If your type is unsized,
-/// you can specify this by adding the annotation `#[diesel(not_sized)]`.
-/// This will skip the impls for non-reference types.
+/// you can specify this by adding the annotation `#[diesel(not_sized)]`
+/// as attribute on the type. This will skip the impls for non-reference types.
 ///
 /// # Attributes:
 ///
@@ -137,7 +137,7 @@ pub fn derive_as_expression(input: TokenStream) -> TokenStream {
 /// # Required type attributes
 ///
 /// * `#[belongs_to(User)]`, to specify a child-to-parent relation ship
-/// between the current table and the specified parent type (`User`).
+/// between the current type and the specified parent type (`User`).
 /// If this attribute is given multiple times, multiple relation ships
 /// are generated.
 /// * `#[belongs_to(User, foreign_key = "mykey")]`, variant of the attribute
@@ -227,9 +227,9 @@ pub fn derive_identifiable(input: TokenStream) -> TokenStream {
 /// For example, to derive this for a struct called `User`, you will
 /// likely need a line such as `use schema::users;`
 ///
-/// If the field name of your
-/// struct differs from the name of the column, you can annotate the field
-/// with `#[column_name = "some_column_name"]`.
+/// If a field name of your
+/// struct differs from the name of the corresponding column,
+/// you can annotate the field with `#[column_name = "some_column_name"]`.
 ///
 /// Your struct can also contain fields which implement `Insertable`. This is
 /// useful when you want to have one field map to more than one column (for
